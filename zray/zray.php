@@ -1,7 +1,6 @@
 <?php
 /*********************************
 	Zend Framework 1 Z-Ray Extension
-	Version: 1.00
 **********************************/
 
 namespace ZF1;
@@ -37,7 +36,7 @@ class ZF1 {
 	}
 	
     public function storeViewExit($context, &$storage) {
-    	$storage['view'][] = $context["functionArgs"];
+    	$storage['view'][] = array('file'=>$context["functionArgs"][0]);
     }
     
     public function storeViewHelperExit($context, &$storage) {
