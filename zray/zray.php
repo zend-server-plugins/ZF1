@@ -11,7 +11,11 @@ use Traversable,
 
 class ZF1 {
     
+    const MAX_DEPTH = 20;
+    
     private $isExceptionSaved = false;
+    private $depth = 0;
+    
 
 	public function storeDispatcherExit($context, &$storage) {
 	    $Zend_Controller_Dispatcher_Standard = $context["this"];
@@ -31,6 +35,10 @@ class ZF1 {
 			 
 			foreach ($plugins as $plugin) {
 				$storage['plugin'][get_class($plugin)] = $this->makeArraySerializable($plugin);
+			}
+			
+			if ($this->depth >= self::MAX_DEPTH) {
+			    $storage['plugin']['out of memory: depth is more ' . self::MAX_DEPTH] = array ('' => array('The data is truncated'));
 			}
 		}
 	}
@@ -197,13 +205,14 @@ class ZF1 {
      */
     private function makeArraySerializable($data) {
         $serializable = array();
+        
         try {
 			if (is_a($data, 'Zend_Layout_Controller_Plugin_Layout')) {
 				$serializable[get_class($data)] = new ZendLayoutControllerPluginLayoutStub();
 				return array('stubbed to prevent memory exhaustion',new ZendLayoutControllerPluginLayoutStub());
 			}
 
-			foreach ($this->iteratorToArray($data) as $key => $value) {
+			foreach ($this->iteratorToArray($data, true, 0) as $key => $value) {
                 if ($value instanceof Traversable || is_array($value)) {
                     $serializable[$key] = $this->makeArraySerializable($value);
 
@@ -232,22 +241,28 @@ class ZF1 {
      * @return array
      */
 	private function objectToArray($iterator, $recursive = true) {
+       
+	    if($this->depth >= self::MAX_DEPTH) {
+	        return array('');
+	    }
+	    
         $array = array();
         $reflect = new \ReflectionClass($iterator);
         foreach ($reflect->getProperties(\ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED | \ReflectionProperty::IS_PRIVATE) as $key=>$prop) {
             $prop->setAccessible(true);
             $value = $prop->getValue($iterator);
-
+        
 			if (is_a($value, 'Closure')) {
 				$array[$prop->getName().' ('.get_class($value).')'] = new ClosureStub();
 				continue;
 			}
-
+        
             if (is_object($value)) {
+                $this->depth += 1;
 				$array[$prop->getName().' ('.get_class($value).')'] = $this->iteratorToArray($value, $recursive);
                 continue;
             }
-
+        
             $array[$prop->getName()] = $value;
         }
         return $array;
@@ -262,6 +277,10 @@ class ZF1 {
      * @return array
      */
 	private function iteratorToArray($iterator, $recursive = true) {
+        if($this->depth >= 100) {
+            return array();
+        }
+        
         if (!is_array($iterator) && !$iterator instanceof Traversable) {
             /**
              * Use reflection for objects that can't be iterated.
@@ -293,11 +312,13 @@ class ZF1 {
             }
 
             if ($value instanceof Traversable) {
+                $this->depth += 1;
 				$array [$key] = $this->iteratorToArray($value, $recursive);
                 continue;
             }
 
             if (is_array($value)) {
+                $this->depth += 1;
 				$array [$key] = $this->iteratorToArray($value, $recursive);
                 continue;
             }
