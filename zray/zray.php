@@ -176,7 +176,7 @@ class ZF1 {
     }
     
     private function getModuleClassName($Zend_Controller_Dispatcher_Standard, $className) {
-        $moduleClassName = $className;
+        $moduleClassName = '';
        
         
         $reflection = new \ReflectionProperty('Zend_Controller_Dispatcher_Standard', '_curModule');
