@@ -30,9 +30,8 @@
 		}		
 		
 		private function getModuleClassName($Zend_Controller_Dispatcher_Standard, $className) {
-			$moduleClassName = $className;
+			$moduleClassName = '';
 		   
-			
 			$reflection = new \ReflectionProperty('Zend_Controller_Dispatcher_Standard', '_curModule');
 			$reflection->setAccessible(true);
 			$_curModule = $reflection->getValue($Zend_Controller_Dispatcher_Standard);
