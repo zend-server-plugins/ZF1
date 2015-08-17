@@ -41,11 +41,10 @@
 			$reflection->setAccessible(true);
 			$_defaultModule = $reflection->getValue($Zend_Controller_Dispatcher_Standard);
 			
-			if (($_defaultModule != $_curModule)
-					|| $Zend_Controller_Dispatcher_Standard->getParam('prefixDefaultModule'))
-			{
-				$moduleClassName = $Zend_Controller_Dispatcher_Standard->formatClassName($_curModule, $className);
-			}
+			$moduleClassName = $_defaultModule;
+	        	if ($_defaultModule != $_curModule) {
+	        		$moduleClassName = $_curModule;
+	        	}
 			return $moduleClassName;
 		}
 		
