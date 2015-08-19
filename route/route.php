@@ -44,6 +44,10 @@
 			$moduleClassName = $_defaultModule;
 	        	if ($_defaultModule != $_curModule) {
 	        		$moduleClassName = $_curModule;
+	        		if (strpos($moduleClassName, '_') > 0) {
+	        			// separate the module name from controller name
+	        			$moduleClassName = substr($moduleClassName, 0 , strpos($moduleClassName, '_'));
+        			}
 	        	}
 			return $moduleClassName;
 		}
