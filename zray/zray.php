@@ -44,7 +44,9 @@ class ZF1 {
 	}
 	
     public function storeViewExit($context, &$storage) {
-    	$storage['view'][] = array('file'=>$context["functionArgs"][0]);
+    	if (isset($context["functionArgs"][0])) {
+            $storage['view'][] = array('file'=>$context["functionArgs"][0]);
+        }
     }
     
     public function storeViewHelperExit($context, &$storage) {
